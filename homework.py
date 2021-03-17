@@ -50,8 +50,8 @@ class CashCalculator(Calculator):
                     'usd': self.USD_RATE,
                     'eur': self.EURO_RATE}
         type_currency = {'rub': 'руб',
-                        'usd': 'USD',
-                        'eur': 'Euro'}
+                         'usd': 'USD',
+                         'eur': 'Euro'}
         if self.count == self.limit:
             return 'Денег нет, держись'
         elif self.count > self.limit:
