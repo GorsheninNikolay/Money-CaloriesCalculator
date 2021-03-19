@@ -1,10 +1,12 @@
+from typing import Optional, List, Dict, Tuple
 import datetime as dt
 
 DATE_FORMAT = "%d.%m.%Y"
 
 
 class Record:
-    def __init__(self, amount: float, comment: str, date: str = None):
+    def __init__(self, amount: float,
+                 comment: str, date: Optional[str] = None):
         self.amount = amount
         self.comment = comment
         if date is None:
@@ -16,25 +18,27 @@ class Record:
 class Calculator:
     def __init__(self, limit: float) -> None:
         self.limit = limit
-        self.records = []
+        self.records: List[Record] = []
 
     def add_record(self, new_record: Record) -> None:
         self.records.append(new_record)
 
     def get_today_stats(self) -> float:
-        TODAY = 0
-        for record in self.records:
-            if record.date == dt.date.today():
-                TODAY += record.amount
-        return TODAY
+        today_count = sum([x.amount for x in self.records
+                          if x.date == dt.date.today()])
+        return today_count
 
     def get_week_stats(self) -> float:
-        WEEK_COUNT = 0
-        for record in self.records:
-            days = dt.date.today() - record.date
-            if days <= dt.timedelta(days=7) and days >= dt.timedelta(days=0):
-                WEEK_COUNT += record.amount
-        return WEEK_COUNT
+        today = dt.date.today()
+        week_ago = today - dt.timedelta(weeks=1)
+        week_count = sum([x.amount for x in self.records if x.date <= today
+                          and x.date >= week_ago])
+        return week_count
+
+    def count_remain(self) -> float:
+        remain = self.get_today_stats()
+        remain = abs(remain - self.limit)
+        return remain
 
 
 class CashCalculator(Calculator):
@@ -43,36 +47,34 @@ class CashCalculator(Calculator):
     EURO_RATE = 87.7
 
     def get_today_cash_remained(self, currency_code: str) -> str:
-        CASH_TODAY = super().get_today_stats()
-        currency = {'rub': self.RUB_RATE,
-                    'usd': self.USD_RATE,
-                    'eur': self.EURO_RATE}
-        type_currency = {'rub': 'руб',
-                         'usd': 'USD',
-                         'eur': 'Euro'}
-        if CASH_TODAY == self.limit:
-            return 'Денег нет, держись'
-        elif CASH_TODAY > self.limit:
-            REMAIN = CASH_TODAY - self.limit
-            REMAIN = round(REMAIN / currency[currency_code], 2)
+        CASH_TODAY = self.get_today_stats()
+        currency: Dict[str, Tuple[str, float]] = {
+            'rub': ('руб', self.RUB_RATE),
+            'usd': ('USD', self.USD_RATE),
+            'eur': ('Euro', self.EURO_RATE)}
+        value_currency = currency[currency_code][1]
+        type_currency = currency[currency_code][0]
+        if CASH_TODAY > self.limit:
+            REMAIN = self.count_remain()
+            REMAIN = round(REMAIN / value_currency, 2)
             return ('Денег нет, держись: '
                     f'твой долг - {REMAIN} '
-                    f'{type_currency[currency_code]}')
-        else:
-            REMAIN = self.limit - CASH_TODAY
-            REMAIN = round(REMAIN / currency[currency_code], 2)
+                    f'{type_currency}')
+        if CASH_TODAY < self.limit:
+            REMAIN = self.count_remain()
+            REMAIN = round(REMAIN / value_currency, 2)
             return ('На сегодня осталось '
                     f'{REMAIN} '
-                    f'{type_currency[currency_code]}')
+                    f'{type_currency}')
+        return 'Денег нет, держись'
 
 
 class CaloriesCalculator(Calculator):
     def get_calories_remained(self) -> str:
-        TODAY = super().get_today_stats()
+        TODAY = self.get_today_stats()
         if TODAY < self.limit:
-            REMAIN = self.limit - TODAY
+            REMAIN = self.count_remain()
             return ('Сегодня можно съесть что-нибудь ещё,'
                     ' но с общей калорийностью не более '
                     f'{REMAIN} кКал')
-        if TODAY >= self.limit:
-            return 'Хватит есть!'
+        return 'Хватит есть!'
