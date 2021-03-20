@@ -1,7 +1,8 @@
-from typing import Optional, List, Dict, Tuple
+from typing import Optional, List
 import datetime as dt
 
 DATE_FORMAT = "%d.%m.%Y"
+DATE_TODAY = dt.date.today()
 
 
 class Record:
@@ -10,7 +11,7 @@ class Record:
         self.amount = amount
         self.comment = comment
         if date is None:
-            self.date = dt.date.today()
+            self.date = DATE_TODAY
         else:
             self.date = dt.datetime.strptime(date, DATE_FORMAT).date()
 
@@ -25,19 +26,19 @@ class Calculator:
 
     def get_today_stats(self) -> float:
         today_count = sum([x.amount for x in self.records
-                          if x.date == dt.date.today()])
+                          if x.date == DATE_TODAY])
         return today_count
 
     def get_week_stats(self) -> float:
-        today = dt.date.today()
+        today = DATE_TODAY
         week_ago = today - dt.timedelta(weeks=1)
         week_count = sum([x.amount for x in self.records if x.date <= today
                           and x.date >= week_ago])
         return week_count
 
-    def count_remain(self) -> float:
+    def get_balance(self) -> float:
         remain = self.get_today_stats()
-        remain = abs(remain - self.limit)
+        remain = self.limit - remain
         return remain
 
 
@@ -47,34 +48,35 @@ class CashCalculator(Calculator):
     EURO_RATE = 87.7
 
     def get_today_cash_remained(self, currency_code: str) -> str:
-        CASH_TODAY = self.get_today_stats()
-        currency: Dict[str, Tuple[str, float]] = {
+        currency = {
             'rub': ('руб', self.RUB_RATE),
             'usd': ('USD', self.USD_RATE),
             'eur': ('Euro', self.EURO_RATE)}
-        value_currency = currency[currency_code][1]
-        type_currency = currency[currency_code][0]
-        if CASH_TODAY > self.limit:
-            REMAIN = self.count_remain()
-            REMAIN = round(REMAIN / value_currency, 2)
+        try:
+            value_currency = currency[currency_code][1]
+            type_currency = currency[currency_code][0]
+        except KeyError:
+            print("Убедитесь в правильности ввода валюты")
+            exit()
+        cash_today = self.get_balance()
+        remain = abs(round(cash_today / value_currency, 2))
+        if cash_today < 0:
             return ('Денег нет, держись: '
-                    f'твой долг - {REMAIN} '
+                    f'твой долг - {remain} '
                     f'{type_currency}')
-        if CASH_TODAY < self.limit:
-            REMAIN = self.count_remain()
-            REMAIN = round(REMAIN / value_currency, 2)
+        if cash_today > 0:
             return ('На сегодня осталось '
-                    f'{REMAIN} '
+                    f'{remain} '
                     f'{type_currency}')
         return 'Денег нет, держись'
 
 
 class CaloriesCalculator(Calculator):
     def get_calories_remained(self) -> str:
-        TODAY = self.get_today_stats()
-        if TODAY < self.limit:
-            REMAIN = self.count_remain()
+        today = self.get_today_stats()
+        if today < self.limit:
+            remain = self.get_balance()
             return ('Сегодня можно съесть что-нибудь ещё,'
                     ' но с общей калорийностью не более '
-                    f'{REMAIN} кКал')
+                    f'{remain} кКал')
         return 'Хватит есть!'
