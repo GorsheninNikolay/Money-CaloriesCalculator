@@ -24,8 +24,9 @@ class Calculator:
         self.records.append(new_record)
 
     def get_today_stats(self) -> float:
+        today = dt.date.today()
         today_count = sum([x.amount for x in self.records
-                          if x.date == dt.date.today()])
+                          if x.date == today])
         return today_count
 
     def get_week_stats(self) -> float:
@@ -49,21 +50,19 @@ class CashCalculator(Calculator):
             'rub': ('руб', self.RUB_RATE),
             'usd': ('USD', self.USD_RATE),
             'eur': ('Euro', self.EURO_RATE)}
-        if currency_code in currency:
-            value_currency = currency[currency_code][1]
-            type_currency = currency[currency_code][0]
-        else:
-            print("Убедитесь в правильности ввода валюты")
-            exit()
+        if currency_code not in currency:
+            raise ValueError("Убедитесь в правильности ввода валюты")
+        value_currency = currency[currency_code][1]
+        type_currency = currency[currency_code][0]
         cash_today = self.get_balance()
+        remain = round(cash_today / value_currency, 2)
         if cash_today == 0:
             return 'Денег нет, держись'
         if cash_today < 0:
-            remain = abs(round(cash_today / value_currency, 2))
+            remain = abs(remain)
             return ('Денег нет, держись: '
                     f'твой долг - {remain} '
                     f'{type_currency}')
-        remain = round(cash_today / value_currency, 2)
         return ('На сегодня осталось '
                 f'{remain} '
                 f'{type_currency}')
