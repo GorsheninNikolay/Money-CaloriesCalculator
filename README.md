@@ -39,9 +39,28 @@ r5 = Record(amount=84, comment='Йогурт.', date='23.02.2019')
 r6 = Record(amount=1140, comment='Баночка чипсов.', date='24.02.2019')
 ```
 
-# Запуск проекта:
+# Развертывание проекта
+
+1. Зайдите в GitBash, при необходимости установите
+2. При помощи команд 
+
+Перейти в каталог:
 ```
-python homework.py
+cd "каталог"
+```
+Подняться на уровень вверх:
+```
+cd .. 
+```
+:exclamation: Перейдите в нужный каталог для клонирования репозитория :exclamation:
+
+3. Клонирование репозитория:
+```
+git clone https://github.com/GorsheninNikolay/YatubeProject
+```
+4. Переход в каталог:
+```
+cd YatubeProject 
 ```
 
 И все! :blush:
