@@ -64,6 +64,28 @@ r5 = Record(amount=84, comment='Йогурт.', date='23.02.2019')
 r6 = Record(amount=1140, comment='Баночка чипсов.', date='24.02.2019')
 ```
 
+```Python
+cash_calculator = CashCalculator(1000)
+calories_calculator = CaloriesCalculator(3000)
+r1 = Record(amount=145, comment='Безудержный шопинг', date='06.03.2019')
+r2 = Record(amount=400, comment='Отель', date='13.03.2021')
+r3 = Record(amount=238, comment='Катание на такси')
+r4 = Record(amount=1186,
+            comment='Кусок тортика. И ещё один...',
+            date='24.02.2019')
+r5 = Record(amount=840, comment='Йогурт')
+r6 = Record(amount=1140, comment='Баночка чипсов.', date='13.03.2021')
+r7 = Record(amount=1500, comment='Чизбургер')
+
+cash_calculator.add_record(r1)
+cash_calculator.add_record(r2)
+cash_calculator.add_record(r3)
+calories_calculator.add_record(r4)
+calories_calculator.add_record(r5)
+calories_calculator.add_record(r6)
+calories_calculator.add_record(r7)
+ ```
+
 6. Запуск проекта:
 ```
 python homework.py
